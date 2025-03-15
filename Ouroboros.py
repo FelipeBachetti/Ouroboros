@@ -9,6 +9,9 @@ def on_text_change(event=None):
     global is_modified
     is_modified = True
 
+    if event.keysym in ("space", "Return", "BackSpace", "Delete"):
+        text.edit_separator()
+
 def newFile():
     global filename, is_modified
     if is_modified:
@@ -63,15 +66,40 @@ def openFile():
     text.delete(0.0, END)
     text.insert(0.0, t)
     text.focus()
+
+def undoText(event=None):
+    try:
+        text.edit_undo()
+    except Exception as e:
+        pass
+
+def redoText(event=None):
+    try:
+        text.edit_redo()
+    except Exception as e:
+        pass
     
 root = Tk()
 root.title("Ouroboros Text Editor")
 root.minsize(width=400, height=400)
 root.maxsize(width=400, height=400)
 
-text = Text(root, height=400, width=400)
+# Toolbar
+toolbar = Frame(root)
+toolbar.pack(side=BOTTOM, fill=X, padx=5, pady=5)
+
+# Toolbar buttons
+undo_btn = Button(toolbar, text="Undo", command=undoText)
+undo_btn.pack(side=LEFT, padx=2, pady=2)
+
+redo_btn = Button(toolbar, text="Redo", command=redoText)
+redo_btn.pack(side=LEFT, padx=2, pady=2)
+
+text = Text(root, height=400, width=400, undo=True)
 text.pack()
-text.bind("<KeyRelease>", on_text_change)
+text.bind("<KeyPress>", on_text_change)
+text.bind_all("<Control-z>", undoText)
+text.bind_all("<Control-y>", redoText)
 
 menubar = Menu(root)
 filemenu = Menu(menubar)

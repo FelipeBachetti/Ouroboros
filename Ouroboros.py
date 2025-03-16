@@ -7,10 +7,20 @@ is_modified = False
 
 def on_text_change(event=None):
     global is_modified
-    is_modified = True
+
+    if event.keysym in ("Shift_L", "Shift_R", "Control_L", "Control_R", "Alt_L", "Alt_R", "s") and event.state & 0x4:
+        return
+    
+    if not is_modified:
+        is_modified = True
+        update_status("Unsaved")
 
     if event.keysym in ("space", "Return", "BackSpace", "Delete"):
         text.edit_separator()
+
+def update_status(status_text):
+    status_label.config(text=f"Status: {status_text}")
+    status_label.update_idletasks()
 
 def newFile():
     global filename, is_modified
@@ -20,10 +30,12 @@ def newFile():
             return
         
     filename = None
+    is_modified = False
+    update_status("Unsaved")
     text.delete(0.0, END)
     text.focus()
 
-def saveFile():
+def saveFile(event=None):
     global filename, is_modified
     if filename:
         try:
@@ -31,6 +43,7 @@ def saveFile():
             with open(filename, 'w', encoding="utf-8") as f:
                 f.write(t.rstrip())
             is_modified = False
+            update_status("Saved")
         except Exception as e:
             showerror(title="Error", message=f"Unable to save file: {e}")
     else:
@@ -48,6 +61,7 @@ def saveAs():
         with open(filename, "w", encoding="utf-8") as f:
             f.write(t.rstrip())
         is_modified = False
+        update_status("Saved")
     except Exception as e:
         showerror(title="Error", message=f"Unable to save file: {e}")
 
@@ -68,14 +82,20 @@ def openFile():
     text.focus()
 
 def undoText(event=None):
+    global is_modified
     try:
         text.edit_undo()
+        is_modified = True
+        update_status("Unsaved")
     except Exception as e:
         pass
 
 def redoText(event=None):
+    global is_modified
     try:
         text.edit_redo()
+        is_modified = True
+        update_status("Unsaved")
     except Exception as e:
         pass
     
@@ -86,7 +106,7 @@ root.maxsize(width=400, height=400)
 
 # Toolbar
 toolbar = Frame(root)
-toolbar.pack(side=BOTTOM, fill=X, padx=5, pady=5)
+toolbar.pack(side=TOP, fill=X, padx=5, pady=5)
 
 # Toolbar buttons
 undo_btn = Button(toolbar, text="Undo", command=undoText)
@@ -95,12 +115,20 @@ undo_btn.pack(side=LEFT, padx=2, pady=2)
 redo_btn = Button(toolbar, text="Redo", command=redoText)
 redo_btn.pack(side=LEFT, padx=2, pady=2)
 
-text = Text(root, height=400, width=400, undo=True)
-text.pack()
-text.bind("<KeyPress>", on_text_change)
+# Text
+text = Text(root, height=20, width=50, undo=True)
+text.pack(expand=True, fill=BOTH)
+
+# Key Mapping
+text.bind("<KeyRelease>", on_text_change)
 text.bind_all("<Control-z>", undoText)
 text.bind_all("<Control-y>", redoText)
+text.bind_all("<Control-s>", lambda event: saveFile())
 
+status_label = Label(root, text="Status: Saved", anchor=W, relief=SUNKEN)
+status_label.pack(side=BOTTOM, fill=X)
+
+# Menu Bar
 menubar = Menu(root)
 filemenu = Menu(menubar)
 filemenu.add_command(label="New", command=newFile)

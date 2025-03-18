@@ -60,6 +60,7 @@ def saveAs():
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write(t.rstrip())
+            root.title(f.name.split('/')[-1].split('.')[0])
         is_modified = False
         update_status("Saved")
     except Exception as e:
@@ -76,6 +77,7 @@ def openFile():
     
     with open(f, "r", encoding="utf-8") as file:
         t = file.read()
+        root.title(file.name.split('/')[-1].split('.')[0])
 
     text.delete(0.0, END)
     text.insert(0.0, t)

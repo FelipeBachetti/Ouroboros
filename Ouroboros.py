@@ -104,12 +104,20 @@ root.title("Ouroboros Text Editor")
 root.geometry("400x400")
 root.resizable(True, True)
 
+#Frame for text and scrollbar
+text_frame = Frame(root)
+text_frame.pack(expand=True, fill=BOTH)
+
+#scrollbar
+scrollbar = Scrollbar(text_frame)
+scrollbar.pack(side=RIGHT, fill=Y)
+
 #Sizegrip
 my_sizegrip = ttk.Sizegrip(root)
 my_sizegrip.pack(side="right", anchor=SE)
 
 # Toolbar
-toolbar = Frame(root)
+toolbar = Frame(text_frame)
 toolbar.pack(side=TOP, fill=X, padx=5, pady=5)
 
 # Toolbar buttons
@@ -120,8 +128,9 @@ redo_btn = Button(toolbar, text="Redo", command=redoText)
 redo_btn.pack(side=LEFT, padx=2, pady=2)
 
 # Text
-text = Text(root, height=20, width=50, undo=True)
+text = Text(text_frame, height=20, width=50, undo=True, yscrollcommand=scrollbar.set)
 text.pack(expand=True, fill=BOTH)
+scrollbar.config(command=text.yview)
 
 # Key Mapping
 text.bind("<KeyRelease>", on_text_change)

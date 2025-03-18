@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from tkinter.messagebox import showerror, askyesno
 
 filename = None
@@ -101,8 +101,12 @@ def redoText(event=None):
     
 root = Tk()
 root.title("Ouroboros Text Editor")
-root.minsize(width=400, height=400)
-root.maxsize(width=400, height=400)
+root.geometry("400x400")
+root.resizable(True, True)
+
+#Sizegrip
+my_sizegrip = ttk.Sizegrip(root)
+my_sizegrip.pack(side="right", anchor=SE)
 
 # Toolbar
 toolbar = Frame(root)
